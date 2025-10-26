@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Apollo - Legal Chatbot</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        body {
+            font-family: 'Merriweather', 'Georgia', serif;
+            background: #f9f7f3 url('courtroom.png') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.65);
+            z-index: 0;
+            pointer-events: none;
+        }
+        #chatbox, header {
+            position: relative;
+            z-index: 1;
+        }
+        #chatbox, header {
+            background: rgba(255,251,230,0.97);
+        }
+        header {
+            background: linear-gradient(90deg, #fffbe6 0%, #f9f7f3 100%);
+            border-bottom: 2px solid #e6c36b;
+            padding: 32px 0 16px 0;
+            text-align: center;
+        }
+        .logo {
+            font-size: 2.2rem;
+            font-family: 'Merriweather', 'Georgia', serif;
+            color: #bfa14a;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            color: #6c5c3a;
+            margin-top: 8px;
+            font-family: 'Georgia', serif;
+        }
+        #chatbox {
+            width: 600px;
+            margin: 40px auto;
+            background: #fffbe6;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px #e6c36b44;
+            padding: 36px 32px 28px 32px;
+            border: 1px solid #e6c36b;
+        }
+        #messages {
+            height: 340px;
+            overflow-y: auto;
+            border: 1px solid #e6c36b;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 1.08rem;
+        }
+        .user {
+            color: #bfa14a;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: right;
+            /* background: rgba(255,251,230,0.7); */
+            border-radius: 8px;
+            padding: 8px 16px;
+            /* margin-left: 80px; */
+        }
+        .bot {
+            color: #6c5c3a;
+            font-family: 'Merriweather', 'Georgia', serif;
+            margin-bottom: 12px;
+            text-align: left;
+            background: rgba(255,251,230,0.7);
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-right: 80px;
+        }
+        .input-row {
+            display: flex;
+            align-items: flex-end;
+            width: 100%;
+            gap: 0;
+        }
+        #input {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 6px 0 0 6px;
+            border: 1px solid #e6c36b;
+            font-size: 1.08rem;
+            font-family: 'Georgia', serif;
+            background: #fff;
+            margin-right: 0;
+        }
+        #send {
+            padding: 14px 32px;
+            background: #bfa14a;
+            color: #fff;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            font-size: 1.08rem;
+            font-family: 'Merriweather', 'Georgia', serif;
+            cursor: pointer;
+            margin-left: 0;
+            transition: background 0.2s;
+        }
+        #send:hover {
+            background: #e6c36b;
+            color: #6c5c3a;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">Apollo Chatbot</div>
+        <div class="subtitle">Your Trusted Legal Assistant, by Melissa Morgan for demo purposes only.</div>
+    </header>
+    <div id="chatbox">
+        <div id="messages"></div>
+        <div id="spinner" style="display:none; text-align:center; margin:18px 0;">
+            <svg width="48" height="48" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#bfa14a" stroke-width="6" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="0">
+                    <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <div style="color:#bfa14a; font-family:'Merriweather',serif; font-size:1.1rem; margin-top:8px;">Thinking...</div>
+        </div>
+        <div class="input-row">
+            <input type="text" id="input" placeholder="Type your message..." autofocus />
+            <button id="send">Send</button>
+        </div>
+        <div style="margin-top:32px; background:#fffbe6; border-radius:8px; border:1px solid #e6c36b; padding:18px 20px; color:#6c5c3a; font-family:'Georgia',serif; font-size:1rem;">
+            <strong>How to use this chatbot:</strong>
+            <ul style="margin-top:10px;">
+                <li>Ask legal, law-related, or compliance questions for quick research and guidance.</li>
+                <li>For best results, be specific (e.g., "What is the statute of limitations for contracts in California?").</li>
+                <li>General questions are answered by AI, but legal/news queries are routed to a specialized legal model.</li>
+                <li>Do not submit confidential or sensitive information.</li>
+                <li>This chatbot does <strong>not</strong> provide official legal advice or replace a licensed attorney.</li>
+                <li>Responses are for informational purposes only and may not be up-to-date or jurisdiction-specific.</li>
+                <li>Limit: Up to 500 characters per question. Complex legal matters may require professional consultation.</li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendBtn = document.getElementById('send');
+
+        function appendMessage(sender, text) {
+            const msg = document.createElement('div');
+            msg.className = sender;
+            if (sender === 'user') {
+                msg.textContent = 'You: ' + text;
+            } else {
+                msg.innerHTML = formatBotResponse(text);
+            }
+            messagesDiv.appendChild(msg);
+            if (sender === 'bot' || sender === 'Apollo') {
+                messagesDiv.scrollTop = 0;
+            } else {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+
+        function formatBotResponse(text) {
+            // Remove Markdown symbols ** and ###
+            text = text.replace(/\*\*/g, '').replace(/###/g, '');
+            // Detect bullet lists (lines starting with -, *, or numbers)
+            const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+            let inList = false;
+            let html = '<span style="font-weight:bold;">Apollo Chat Bot:</span> ';
+            let listItems = [];
+            for (let line of lines) {
+                if (/^\s*[-*]\s+/.test(line) || /^\s*\d+\.\s+/.test(line)) {
+                    inList = true;
+                    listItems.push(line.replace(/^\s*[-*]\s+|^\s*\d+\.\s+/, ''));
+                } else {
+                    if (inList && listItems.length) {
+                        html += '<ul>' + listItems.map(item => `<li>${item}</li>`).join('') + '</ul>';
+                        listItems = [];
+                        inList = false;
+                    }
+                    html += `<p>${line}</p>`;
+                }
+            }
+            if (inList && listItems.length) {
+                html += '<ul>' + listItems.map(item => `<li>${item}</li>`).join('') + '</ul>';
+            }
+            return html;
+        }
+
+        sendBtn.onclick = async function() {
+            const userText = input.value.trim();
+            if (!userText) return;
+            appendMessage('user', userText);
+            input.value = '';
+            document.getElementById('spinner').style.display = 'block';
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userText })
+                });
+                const data = await res.json();
+                appendMessage('bot', data.response);
+            } catch (e) {
+                appendMessage('bot', 'Sorry, there was an error.');
+            } finally {
+                document.getElementById('spinner').style.display = 'none';
+            }
+        };
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+    </script>
+</body>
+</html>
